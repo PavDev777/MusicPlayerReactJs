@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 
 import Player from "./components/Player";
 import Song from "./components/Song";
-import data from "./util";
+import data from "./data";
 import Library from "./components/Library";
 import Nav from "./components/Nav";
 
@@ -26,8 +26,14 @@ function App() {
     setSongInfo({ ...songInfo, currentTime: current, duration });
   };
 
+  const songEndHandler = async () => {
+    let currentIndex = songs.findIndex((song) => song.id === currentSong.id);
+    await setCurrentSong(songs[(currentIndex + 1) % songs.length]); //back to zero index
+    if (isPlaying) audioRef.current.play();
+  };
+
   return (
-    <div className="App">
+    <div className={`App ${libraryStatus ? "library-active" : ""} `}>
       <Nav libraryStatus={libraryStatus} setLibraryStatus={setLibraryStatus} />
       <Song currentSong={currentSong} />
       <Player
@@ -37,6 +43,10 @@ function App() {
         audioRef={audioRef}
         setSongInfo={setSongInfo}
         songInfo={songInfo}
+        songs={songs}
+        setCurrentSong={setCurrentSong}
+        setLibraryStatus={setLibraryStatus}
+        setSongs={setSongs}
       />
       <Library
         audioRef={audioRef}
@@ -52,6 +62,7 @@ function App() {
         onLoadedMetadata={timeUpdateHandler}
         ref={audioRef}
         src={currentSong.audio}
+        onEnded={songEndHandler}
       ></audio>
     </div>
   );
